@@ -23,7 +23,9 @@ ratings=[] #List to store rating of the product
 driver.get("https://nominis.cef.fr/contenus/prenom/alphabetique/B.html")
 
 content = driver.page_source
-print(content)
+#print(content)
 soup = BeautifulSoup(content)
-for a in soup.findAll('a',href=True, attrs={'class':'_31qSD5'}):
-    name=a.find('div', attrs={'class':'_3wU53n'})
+#for a in soup.findAll('a',href=True, attrs={'class':'mb-1'}):
+for a in soup.findAll('a',href=True, attrs={'class':"list-group-item list-group-item-action"}):
+    print(a)
+    #name=a.find('div', attrs={'class':'_3wU53n'})
