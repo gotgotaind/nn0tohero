@@ -25,7 +25,7 @@ driver.get("https://nominis.cef.fr/contenus/prenom/alphabetique/B.html")
 content = driver.page_source
 #print(content)
 soup = BeautifulSoup(content)
-#for a in soup.findAll('a',href=True, attrs={'class':'mb-1'}):
-for a in soup.findAll('a',href=True, attrs={'class':"list-group-item list-group-item-action"}):
-    print(a)
+#for a in soup.findAll( attrs={'class':'mb-1'}):
+for a in soup.findAll( class_="mb-1"):
+    print(a.string)
     #name=a.find('div', attrs={'class':'_3wU53n'})
