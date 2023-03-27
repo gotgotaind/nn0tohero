@@ -12,5 +12,31 @@ E03: use the dev set to tune the strength of smoothing (or regularization) for t
 E04: we saw that our 1-hot vectors merely select a row of W, so producing these vectors explicitly feels wasteful. Can you delete our use of F.one_hot in favor of simply indexing into rows of W?
 E05: look up and use F.cross_entropy instead. You should achieve the same result. Can you think of why we'd prefer to use F.cross_entropy instead?
 E06: meta-exercise! Think of a fun/interesting exercise and complete it.
+
  """
 
+input='prenoms.txt'
+
+# Generate the list of charaters
+charset=set()
+
+with open(input) as f:
+    for i,line in enumerate(f):
+        for c in line:
+            #charset.add(char.lower)
+            charset.add(c.lower())
+
+charlist=list(charset)
+charlist.sort()
+
+char_to_i=dict()
+i_to_char=dict()
+for i,c in enumerate charlist:
+    char_to_i{c}=i
+    i_to_char{i}=c
+
+count
+with open(input) as f:
+    for line in (f):
+        for i,c in enumerate(line):
+            charset.add(c.lower())
