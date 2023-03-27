@@ -14,6 +14,7 @@ E05: look up and use F.cross_entropy instead. You should achieve the same result
 E06: meta-exercise! Think of a fun/interesting exercise and complete it.
 
  """
+import numpy as np
 
 input='prenoms.txt'
 
@@ -24,6 +25,8 @@ with open(input) as f:
     for i,line in enumerate(f):
         for c in line:
             #charset.add(char.lower)
+            if( c == '\n' ):
+                c='.'
             charset.add(c.lower())
 
 charlist=list(charset)
@@ -31,12 +34,42 @@ charlist.sort()
 
 char_to_i=dict()
 i_to_char=dict()
-for i,c in enumerate charlist:
-    char_to_i{c}=i
-    i_to_char{i}=c
 
-count
+
+for i,c in enumerate(charlist):
+    char_to_i[c]=i
+    i_to_char[i]=c
+
+#print(char_to_i)
+
+len_chars=len(charlist)
+count=np.zeros((len_chars,len_chars),dtype=int)
 with open(input) as f:
     for line in (f):
-        for i,c in enumerate(line):
-            charset.add(c.lower())
+        i=0
+        #last_char=''
+        for c in (line.lower()):
+
+            if( c == '\n' ):
+                c='.'
+            if(i==0):
+                prev_char='.'
+            else:
+                prev_char=line[i-1].lower()
+            count[char_to_i[prev_char]][char_to_i[c]] += 1
+            i+=1
+            #last_char=c
+        #count[char_to_i[last_char],char_to_i['.']] += 1
+
+import matplotlib.pyplot as plt
+#%matplotlib inline
+
+plt.figure(figsize=(32,32))
+plt.imshow(count, cmap='Blues')
+for i in range(len_chars):
+    for j in range(len_chars):
+        chstr = i_to_char[i] + i_to_char[j]
+        plt.text(j, i, chstr, ha="center", va="bottom", color='gray')
+        plt.text(j, i, count[i, j], ha="center", va="top", color='gray')
+plt.axis('off');
+plt.savefig('image.png')
