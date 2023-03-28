@@ -61,15 +61,45 @@ with open(input) as f:
             #last_char=c
         #count[char_to_i[last_char],char_to_i['.']] += 1
 
-import matplotlib.pyplot as plt
-#%matplotlib inline
-
-plt.figure(figsize=(32,32))
-plt.imshow(count, cmap='Blues')
+sum=np.zeros((len_chars),dtype=int)
 for i in range(len_chars):
     for j in range(len_chars):
-        chstr = i_to_char[i] + i_to_char[j]
-        plt.text(j, i, chstr, ha="center", va="bottom", color='gray')
-        plt.text(j, i, count[i, j], ha="center", va="top", color='gray')
-plt.axis('off');
-plt.savefig('image.png')
+        sum[i]+=count[i][j]
+
+p=np.zeros((len_chars,len_chars),dtype=float)
+for i in range(len_chars):
+    for j in range(len_chars):
+        p[i][j]=count[i][j]/sum[i]
+
+#print(p[char_to_i['.']])
+#exit()
+# ss=0.0
+# for j in range(len_chars):
+#     ss+=p[4][j]
+# print(ss)
+# import matplotlib.pyplot as plt
+# #%matplotlib inline
+
+# plt.figure(figsize=(32,32))
+# plt.imshow(p, cmap='Blues')
+# for i in range(len_chars):
+#     for j in range(len_chars):
+#         chstr = i_to_char[i] + i_to_char[j]
+#         plt.text(j, i, chstr, ha="center", va="bottom", color='gray')
+#         plt.text(j, i, p[i, j], ha="center", va="top", color='gray')
+# plt.axis('off');
+# plt.savefig('image.png')
+
+
+next_c='.'
+name=''
+while(True):
+    my_generator = np.random.default_rng()
+    next_i=my_generator.multinomial(1, p[char_to_i[next_c]])
+    next_c=i_to_char[next_i[0]]
+    name+=next_c
+    print(next_c,next_i)
+    if(next_c == '.'):
+        break
+print(name)
+    
