@@ -47,65 +47,64 @@ for i,c in enumerate(charlist):
 
 len_chars=len(charlist)
 
-W = torch.randn((len_chars, 1))
-xenc = F.one_hot(xs, num_classes=27).float()
+
 
 #count=np.zeros((len_chars,len_chars),dtype=int)
 xs=[]
 ys=[]
 prevc='.'
+total_chars=0
 
 with open(input) as f:
+    i=0
     for line in (f):
-        i=0
+
         #last_char=''
         for c in (line.lower()):
 
             if( c == '\n' ):
                 c='.'
-            xs.append(prevc)
-            ys.append(c)
+            xs.append(char_to_i[prevc])
+            ys.append(char_to_i[c])
             prevc=c
-            i+=1
-            if(i > 2):
-                break
+            total_chars+=1
+        i+=1
+        
+        if(i > 2):
+            break
             #last_char=c
         #count[char_to_i[last_char],char_to_i['.']] += 1
+for i,x in enumerate(xs):
+    print(i_to_char[x],i_to_char[ys[i]])
 
+xs=torch.tensor(xs)
+ys=torch.tensor(ys)
 
-z=zip(xs,ys)
-print(z)
+g = torch.Generator().manual_seed(2147483647)
+W = torch.randn((len_chars, len_chars), generator=g,requires_grad=True)
+xenc = F.one_hot(xs, num_classes=len_chars).float()
 
+# gradient descent
+for k in range(10):
+
+    logits = xenc @ W # predict log-counts
+    counts = logits.exp() # counts, equivalent to N
+    probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
+    loss = -probs[torch.arange(total_chars), ys].log().mean()
+    print(loss.item())
+    # backward pass
+    W.grad = None # set to zero the gradient
+    loss.backward()
+
+    # update
+    W.data += -5 * W.grad
+
+#print(probs.shape)
+#print(len_chars)
 exit()
 
-sum=np.zeros((len_chars),dtype=int)
-for i in range(len_chars):
-    for j in range(len_chars):
-        sum[i]+=count[i][j]
 
-p=np.zeros((len_chars,len_chars),dtype=float)
-for i in range(len_chars):
-    for j in range(len_chars):
-        p[i][j]=count[i][j]/sum[i]
 
-#print(p[char_to_i['.']])
-#exit()
-# ss=0.0
-# for j in range(len_chars):
-#     ss+=p[4][j]
-# print(ss)
-# import matplotlib.pyplot as plt
-# #%matplotlib inline
-
-# plt.figure(figsize=(32,32))
-# plt.imshow(p, cmap='Blues')
-# for i in range(len_chars):
-#     for j in range(len_chars):
-#         chstr = i_to_char[i] + i_to_char[j]
-#         plt.text(j, i, chstr, ha="center", va="bottom", color='gray')
-#         plt.text(j, i, p[i, j], ha="center", va="top", color='gray')
-# plt.axis('off');
-# plt.savefig('image.png')
 
 my_generator = np.random.default_rng(7)
 for _ in range(50):
