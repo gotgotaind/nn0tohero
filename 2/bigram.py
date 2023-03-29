@@ -90,16 +90,16 @@ for i in range(len_chars):
 # plt.axis('off');
 # plt.savefig('image.png')
 
-
-next_c='.'
-name=''
-while(True):
-    my_generator = np.random.default_rng()
-    next_i=my_generator.multinomial(1, p[char_to_i[next_c]])
-    next_c=i_to_char[next_i[0]]
-    name+=next_c
-    print(next_c,next_i)
-    if(next_c == '.'):
-        break
-print(name)
+my_generator = np.random.default_rng(7)
+for _ in range(50):
+    next_c='.'
+    name=''
+    while(True):
+        next_i=my_generator.multinomial(1, p[char_to_i[next_c]]).argmax(axis=-1)
+        next_c=i_to_char[next_i]
+        name+=next_c
+        #print(next_c,next_i)
+        if(next_c == '.'):
+            break
+    print(name)
     
