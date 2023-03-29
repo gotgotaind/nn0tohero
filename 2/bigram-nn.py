@@ -85,7 +85,7 @@ W = torch.randn((len_chars, len_chars), generator=g,requires_grad=True)
 xenc = F.one_hot(xs, num_classes=len_chars).float()
 
 # gradient descent
-for k in range(10):
+for k in range(100):
 
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
@@ -99,8 +99,35 @@ for k in range(10):
     # update
     W.data += -5 * W.grad
 
+
+
 #print(probs.shape)
 #print(len_chars)
+
+
+for i in range(50):
+  
+  out = []
+  ix = char_to_i['.']
+  while True:
+    
+    # ----------
+    # BEFORE:
+    #p = P[ix]
+    # ----------
+    # NOW:
+    xenc = F.one_hot(torch.tensor([ix]), num_classes=len_chars).float()
+    logits = xenc @ W # predict log-counts
+    counts = logits.exp() # counts, equivalent to N
+    p = counts / counts.sum(1, keepdims=True) # probabilities for next character
+    # ----------
+    
+    ix = torch.multinomial(p, num_samples=1, replacement=True, generator=g).item()
+    out.append(i_to_char[ix])
+    if ix == char_to_i['.']:
+      break
+  print(''.join(out))
+
 exit()
 
 
