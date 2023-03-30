@@ -70,8 +70,8 @@ with open(input) as f:
             total_chars+=1
         i+=1
         
-        if(i > 2):
-            break
+#        if(i > 2):
+#            break
             #last_char=c
         #count[char_to_i[last_char],char_to_i['.']] += 1
 for i,x in enumerate(xs):
@@ -85,7 +85,7 @@ W = torch.randn((len_chars, len_chars), generator=g,requires_grad=True)
 xenc = F.one_hot(xs, num_classes=len_chars).float()
 
 # gradient descent
-for k in range(100):
+for k in range(1000):
 
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
@@ -97,7 +97,7 @@ for k in range(100):
     loss.backward()
 
     # update
-    W.data += -5 * W.grad
+    W.data += -50 * W.grad
 
 
 
