@@ -15,6 +15,7 @@ E06: meta-exercise! Think of a fun/interesting exercise and complete it.
 
  """
 import numpy as np
+import torch
 
 input='prenoms.txt'
 
@@ -136,3 +137,37 @@ for _ in range(50):
             break
     print(name)
     
+
+
+log_likelihood = 0.0
+n = 0
+
+
+n=0
+with open(input) as f:
+    for line in (f):
+        line=line.lower()
+        i=0
+        #last_char=''
+        for c in (line.lower()):
+
+            if( c == '\n' ):
+                c='.'
+            if(i==0):
+                prev_char='.'
+                prev_prev_char='.'
+            elif(i==1):
+                prev_char=line[i-1]
+                prev_prev_char='.'
+            else:
+                prev_char=line[i-1]
+                prev_prev_char=line[i-2]
+            prob=p[char_to_i[prev_prev_char]*len_chars+char_to_i[prev_char]][char_to_i[c]] 
+            logprob = np.log(prob)
+            log_likelihood += logprob
+            i+=1
+            n+=1
+print(f'{log_likelihood=}')
+nll = -log_likelihood
+print(f'{nll=}')
+print(f'{nll/n}')
