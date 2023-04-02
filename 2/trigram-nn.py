@@ -44,7 +44,15 @@ for i,c in enumerate(charlist):
     i_to_char[i]=c
 
 #print(char_to_i)
+# def i_to_char(i):
+#     return i_to_char[i]
 
+# def char_to_i(char):
+#     return char_to_i[char]
+
+def onehot_to_char(enc):
+    return (i_to_char[torch.argmax(enc[i][0]).item()],i_to_char[torch.argmax(enc[i][1]).item()])
+                     
 len_chars=len(charlist)
 
 def i_to_bigram(i):
@@ -99,24 +107,28 @@ xenc = F.one_hot(xs, num_classes=len_chars).float()
 #exit()
 
 # gradient descent
-for k in range(10):
+for k in range(100):
 
     logits = xenc @ W # predict log-counts
+    #print(f'{logits.size()}')
+    #print(f'{logits[torch.arange(total_samples),0, ys[:,1]]=}')
     counts = logits.exp() # counts, equivalent to N
-    probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
-    #print(ys[:,0])
-    #print(probs[0])
-    #exit()
-    loss0 = -probs[:,0][torch.arange(total_samples), ys[:,0]].log().mean()
-    loss1 = -probs[:,1][torch.arange(total_samples), ys[:,1]].log().mean()
+    probs = counts / counts.sum(2, keepdims=True) # probabilities for next character
+    #print(f'{probs[0]}')
+    loss0 = -probs[torch.arange(total_samples),0, ys[:,1]].log().mean()
+    loss1 = -probs[torch.arange(total_samples),1, ys[:,1]].log().mean()
     loss=loss0+loss1
-    print(loss.item())
+    for i in range(0):
+        print(f'{onehot_to_char(xenc)=},{i_to_char[ys[i,0].item()]=},{i_to_char[ys[i,1].item()]=}')
+
+    print(f'{loss.item()=}')
+
     # backward pass
     W.grad = None # set to zero the gradient
     loss.backward()
 
     # update
-    W.data += -50 * W.grad
+    W.data += -5 * W.grad
 
 
 
@@ -138,15 +150,19 @@ for i in range(50):
     xenc = F.one_hot(torch.tensor([ix]), num_classes=len_chars).float()
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
-    p = counts / counts.sum(1, keepdims=True) # probabilities for next character
+
+    p = counts / counts.sum(2, keepdims=True) # probabilities for next character
+    #print(f'{p.size()}')
     # ----------
     
-    ix0 = torch.multinomial(p[:,0], num_samples=1, replacement=True, generator=g).item()
-    ix1 = torch.multinomial(p[:,1], num_samples=1, replacement=True, generator=g).item()
+    ix1 = torch.multinomial(p[0,0,:], num_samples=1, replacement=True, generator=g).item()
+    ix2 = torch.multinomial(p[0,1,:], num_samples=1, replacement=True, generator=g).item()
+    ix=[ix[1],ix2]
+    #ix1 = torch.multinomial(p[:,1], num_samples=1, replacement=True, generator=g).item()
     out.append(i_to_char[ix1])
     if ix1 == char_to_i['.']:
       break
-    ix=[ix0,ix1]
+    #ix=[ix0,ix1]
   print(''.join(out))
 
 exit()
