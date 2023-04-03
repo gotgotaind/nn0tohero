@@ -107,17 +107,27 @@ xenc = F.one_hot(xs, num_classes=len_chars).float()
 #exit()
 
 # gradient descent
-for k in range(100):
+for k in range(20):
 
     logits = xenc @ W # predict log-counts
+
+
     #print(f'{logits.size()}')
     #print(f'{logits[torch.arange(total_samples),0, ys[:,1]]=}')
     counts = logits.exp() # counts, equivalent to N
     probs = counts / counts.sum(2, keepdims=True) # probabilities for next character
     #print(f'{probs[0]}')
-    loss0 = -probs[torch.arange(total_samples),0, ys[:,1]].log().mean()
+    loss0 = -probs[torch.arange(total_samples),0, ys[:,0]].log().mean()
     loss1 = -probs[torch.arange(total_samples),1, ys[:,1]].log().mean()
-    loss=loss0+loss1
+    # print(f'{W.size()=}')
+    # print(f'{xenc.size()=}')
+    # print(f'{logits.size()=}')
+    # print(f'{counts.size()=}')
+    # print(f'{loss0.size()=}')
+    # print(f'{probs[5,0,:].sum()=}')
+    # print(f'{probs[5,1,:].sum()=}')
+    #exit()
+    loss=(loss0+loss1)/2
     for i in range(0):
         print(f'{onehot_to_char(xenc)=},{i_to_char[ys[i,0].item()]=},{i_to_char[ys[i,1].item()]=}')
 
@@ -147,17 +157,19 @@ for i in range(50):
     #p = P[ix]
     # ----------
     # NOW:
-    xenc = F.one_hot(torch.tensor([ix]), num_classes=len_chars).float()
+    xenc = F.one_hot(torch.tensor(ix), num_classes=len_chars).float()
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
 
     p = counts / counts.sum(2, keepdims=True) # probabilities for next character
-    #print(f'{p.size()}')
+    print(f'{p.size()=}')
+    print(f'{p[0,:,:].sum(dim=1)=}')
+    exit()
     # ----------
     
     ix1 = torch.multinomial(p[0,0,:], num_samples=1, replacement=True, generator=g).item()
     ix2 = torch.multinomial(p[0,1,:], num_samples=1, replacement=True, generator=g).item()
-    ix=[ix[1],ix2]
+    ix=[ix1,ix2]
     #ix1 = torch.multinomial(p[:,1], num_samples=1, replacement=True, generator=g).item()
     out.append(i_to_char[ix1])
     if ix1 == char_to_i['.']:
