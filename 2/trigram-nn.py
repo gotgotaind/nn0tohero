@@ -107,7 +107,7 @@ xenc = F.one_hot(xs, num_classes=len_chars).float()
 #exit()
 
 # gradient descent
-for k in range(50):
+for k in range(500):
 
     logits = xenc @ W # predict log-counts
 
@@ -145,8 +145,8 @@ for k in range(50):
 #print(probs.shape)
 #print(len_chars)
 
-g_cpu = torch.Generator()
-for i in range(5):
+g = torch.Generator()
+for i in range(50):
   
   out = []
   ix = [char_to_i['.'],char_to_i['.']]
@@ -167,8 +167,8 @@ for i in range(5):
     #exit()
     # ----------
     
-    ix1 = torch.multinomial(p[0,:], num_samples=1, replacement=True, generator=g_cpu).item()
-    ix2 = torch.multinomial(p[0,:], num_samples=1, replacement=True, generator=g_cpu).item()
+    ix1 = torch.multinomial(p[0,:], num_samples=1, replacement=True, generator=g).item()
+    ix2 = torch.multinomial(p[0,:], num_samples=1, replacement=True, generator=g).item()
     #print(f'{ix1=}={i_to_char[ix1]}')
     #print(f'{p[0,:]=}')
     #exit()

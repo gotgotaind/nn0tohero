@@ -74,8 +74,8 @@ with open(input) as f:
 #            break
             #last_char=c
         #count[char_to_i[last_char],char_to_i['.']] += 1
-for i,x in enumerate(xs):
-    print(i_to_char[x],i_to_char[ys[i]])
+#for i,x in enumerate(xs):
+    #print(i_to_char[x],i_to_char[ys[i]])
 
 xs=torch.tensor(xs)
 ys=torch.tensor(ys)
