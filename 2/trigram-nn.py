@@ -107,7 +107,7 @@ xenc = F.one_hot(xs, num_classes=len_chars).float()
 #exit()
 
 # gradient descent
-for k in range(5):
+for k in range(50):
 
     logits = xenc @ W # predict log-counts
 
@@ -145,8 +145,8 @@ for k in range(5):
 #print(probs.shape)
 #print(len_chars)
 
-
-for i in range(50):
+g_cpu = torch.Generator()
+for i in range(5):
   
   out = []
   ix = [char_to_i['.'],char_to_i['.']]
@@ -162,15 +162,16 @@ for i in range(50):
     counts = logits.exp() # counts, equivalent to N
 
     p = counts / counts.sum(1, keepdims=True) # probabilities for next character
-    print(f'{p.size()=}')
-    print(f'{p.sum(dim=1)=}')
-    exit()
+    #print(f'{p.size()=}')
+    #print(f'{p.sum(dim=1)=}')
+    #exit()
     # ----------
     
-    ix1 = torch.multinomial(p[0,0,:], num_samples=1, replacement=True, generator=g).item()
-    ix2 = torch.multinomial(p[0,1,:], num_samples=1, replacement=True, generator=g).item()
-    print(f'{size(ix1)}')
-    exit()
+    ix1 = torch.multinomial(p[0,:], num_samples=1, replacement=True, generator=g_cpu).item()
+    ix2 = torch.multinomial(p[0,:], num_samples=1, replacement=True, generator=g_cpu).item()
+    #print(f'{ix1=}={i_to_char[ix1]}')
+    #print(f'{p[0,:]=}')
+    #exit()
     ix=[ix1,ix2]
     #ix1 = torch.multinomial(p[:,1], num_samples=1, replacement=True, generator=g).item()
     out.append(i_to_char[ix1])

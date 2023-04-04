@@ -85,7 +85,7 @@ W = torch.randn((len_chars, len_chars), generator=g,requires_grad=True)
 xenc = F.one_hot(xs, num_classes=len_chars).float()
 
 # gradient descent
-for k in range(1000):
+for k in range(100):
 
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
