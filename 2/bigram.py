@@ -89,9 +89,13 @@ for i in range(len_chars):
 #         plt.text(j, i, p[i, j], ha="center", va="top", color='gray')
 # plt.axis('off');
 # plt.savefig('image.png')
-
+list_chars=[]
+for i in range(len_chars):
+    list_chars.append(i_to_char[i])
+print(f'{list_chars=}')
+print(f'{p[0]}')
 my_generator = np.random.default_rng(7)
-for _ in range(50):
+for _ in range(10):
     next_c='.'
     name=''
     while(True):

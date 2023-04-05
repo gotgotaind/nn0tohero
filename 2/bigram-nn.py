@@ -83,14 +83,20 @@ ys=torch.tensor(ys)
 g = torch.Generator().manual_seed(2147483647)
 W = torch.randn((len_chars, len_chars), generator=g,requires_grad=True)
 xenc = F.one_hot(xs, num_classes=len_chars).float()
+print(f'{xenc.size()=},{total_chars}')
 
+# initialize those so that they are in global scope and 
+# and I can use them at the end of gradient descent
+logits = xenc @ W # predict log-counts
+counts = logits.exp() # counts, equivalent to N
+probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
 # gradient descent
-for k in range(100):
+for k in range(50):
 
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
     probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
-    loss = -probs[torch.arange(total_chars), ys].log().mean()
+    loss = -probs[torch.arange(total_chars), ys].log().mean()+ 0.01*(W**2).mean()
     print(loss.item())
     # backward pass
     W.grad = None # set to zero the gradient
@@ -103,26 +109,22 @@ for k in range(100):
 
 #print(probs.shape)
 #print(len_chars)
+list_chars=[]
+for i in range(len_chars):
+    list_chars.append(i_to_char[i])
+print(f'{list_chars=}')
+print(f'{probs[0]}')
 
+for i in range(total_chars):
+    if(xs[i]==0):
+        print(f'{xs[i]=},{ys[i]=}')
 
-for i in range(50):
+for i in range(10):
   
   out = []
   ix = char_to_i['.']
-  while True:
-    
-    # ----------
-    # BEFORE:
-    #p = P[ix]
-    # ----------
-    # NOW:
-    xenc = F.one_hot(torch.tensor([ix]), num_classes=len_chars).float()
-    logits = xenc @ W # predict log-counts
-    counts = logits.exp() # counts, equivalent to N
-    p = counts / counts.sum(1, keepdims=True) # probabilities for next character
-    # ----------
-    
-    ix = torch.multinomial(p, num_samples=1, replacement=True, generator=g).item()
+  while True:    
+    ix = torch.multinomial(probs[ix], num_samples=1, replacement=True, generator=g).item()
     out.append(i_to_char[ix])
     if ix == char_to_i['.']:
       break
