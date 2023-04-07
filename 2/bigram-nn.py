@@ -96,15 +96,21 @@ for k in range(50):
     logits = xenc @ W # predict log-counts
     counts = logits.exp() # counts, equivalent to N
     probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
-    loss = -probs[torch.arange(total_chars), ys].log().mean()+ 0.01*(W**2).mean()
-    print(loss.item())
+    #print(f'{probs[0]}')
+    loss = -probs[torch.arange(total_chars), ys].log().mean()+ 0.1*(W**2).mean()
+
+
+
     # backward pass
     W.grad = None # set to zero the gradient
     loss.backward()
-
+    print(loss.item())
     # update
-    W.data += -50 * W.grad
-
+    W.data += -5 * W.grad
+    logits0=F.one_hot(torch.tensor([0]), num_classes=len_chars).float() @ W
+    counts0=logits0.exp()
+    probs0=counts0 / counts0.sum(1, keepdims=True)
+    print(f'{probs0=}')
 
 
 #print(probs.shape)
@@ -113,7 +119,7 @@ list_chars=[]
 for i in range(len_chars):
     list_chars.append(i_to_char[i])
 print(f'{list_chars=}')
-print(f'{probs[0]}')
+print(f'{probs[0]=}')
 
 for i in range(total_chars):
     if(xs[i]==0):
@@ -122,8 +128,15 @@ for i in range(total_chars):
 for i in range(10):
   
   out = []
-  ix = char_to_i['.']
-  while True:    
+  ix = char_to_i[' ']
+  print(f'{ix=}')
+  while True:
+    xenc = F.one_hot(torch.tensor([ix]), num_classes=len_chars).float()    
+    logits = xenc @ W # predict log-counts
+    counts = logits.exp() # counts, equivalent to N
+    p = counts / counts.sum(1, keepdims=True) # probabilities for next character
+    print(f'{p=}')
+    exit()
     ix = torch.multinomial(probs[ix], num_samples=1, replacement=True, generator=g).item()
     out.append(i_to_char[ix])
     if ix == char_to_i['.']:

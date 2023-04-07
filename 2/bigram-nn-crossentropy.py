@@ -15,6 +15,9 @@ E06: meta-exercise! Think of a fun/interesting exercise and complete it.
 
  """
 import numpy as np
+import torch.nn.functional as F
+import torch
+
 
 input='prenoms.txt'
 
@@ -43,60 +46,113 @@ for i,c in enumerate(charlist):
 #print(char_to_i)
 
 len_chars=len(charlist)
-count=np.zeros((len_chars,len_chars),dtype=int)
+
+
+
+#count=np.zeros((len_chars,len_chars),dtype=int)
+xs=[]
+ys=[]
+prevc='.'
+total_chars=0
+
 with open(input) as f:
+    i=0
     for line in (f):
-        i=0
+
         #last_char=''
         for c in (line.lower()):
 
             if( c == '\n' ):
                 c='.'
-            if(i==0):
-                prev_char='.'
-            else:
-                prev_char=line[i-1].lower()
-            count[char_to_i[prev_char]][char_to_i[c]] += 1
-            i+=1
+            xs.append(char_to_i[prevc])
+            ys.append(char_to_i[c])
+            prevc=c
+            total_chars+=1
+        i+=1
+        
+#        if(i > 2):
+#            break
             #last_char=c
         #count[char_to_i[last_char],char_to_i['.']] += 1
+#for i,x in enumerate(xs):
+    #print(i_to_char[x],i_to_char[ys[i]])
 
-sum=np.zeros((len_chars),dtype=int)
-for i in range(len_chars):
-    for j in range(len_chars):
-        sum[i]+=count[i][j]
+xs=torch.tensor(xs)
+ys=torch.tensor(ys)
 
-p=np.zeros((len_chars,len_chars),dtype=float)
-for i in range(len_chars):
-    for j in range(len_chars):
-        p[i][j]=count[i][j]/sum[i]
+g = torch.Generator().manual_seed(2147483647)
+W = torch.randn((len_chars, len_chars), generator=g,requires_grad=True)
+xenc = F.one_hot(xs, num_classes=len_chars).float()
+yenc = F.one_hot(ys, num_classes=len_chars).float()
+print(f'{xenc.size()=},{total_chars}')
 
-#print(p[char_to_i['.']])
-#exit()
-# ss=0.0
-# for j in range(len_chars):
-#     ss+=p[4][j]
-# print(ss)
-# import matplotlib.pyplot as plt
-# #%matplotlib inline
+# initialize those so that they are in global scope and 
+# and I can use them at the end of gradient descent
+logits = xenc @ W # predict log-counts
+counts = logits.exp() # counts, equivalent to N
+probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
+# gradient descent
+cel = torch.nn.CrossEntropyLoss()
+for k in range(200):
 
-# plt.figure(figsize=(32,32))
-# plt.imshow(p, cmap='Blues')
-# for i in range(len_chars):
-#     for j in range(len_chars):
-#         chstr = i_to_char[i] + i_to_char[j]
-#         plt.text(j, i, chstr, ha="center", va="bottom", color='gray')
-#         plt.text(j, i, p[i, j], ha="center", va="top", color='gray')
-# plt.axis('off');
-# plt.savefig('image.png')
+    logits = xenc @ W # predict log-counts
+    #counts = logits.exp() # counts, equivalent to N
+    #probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
+    #print(f'{probs[0]}')
+
+    #loss = -probs[torch.arange(total_chars), ys].log().mean()+ 0.1*(W**2).mean()
+    loss = cel(logits, ys)+ 0.1*(W**2).mean()
+
+
+    # backward pass
+    W.grad = None # set to zero the gradient
+    loss.backward()
+    print(loss.item())
+    # update
+    W.data += -50 * W.grad
+    logits0=F.one_hot(torch.tensor([0]), num_classes=len_chars).float() @ W
+    counts0=logits0.exp()
+    probs0=counts0 / counts0.sum(1, keepdims=True)
+    #print(f'{probs0=}')
+
+
+#print(probs.shape)
+#print(len_chars)
 list_chars=[]
 for i in range(len_chars):
     list_chars.append(i_to_char[i])
-np.set_printoptions(precision=4,suppress=True)
 print(f'{list_chars=}')
-print(f'{p[4]}')
+print(f'{probs[0]=}')
+
+for i in range(total_chars):
+    if(xs[i]==0):
+        print(f'{xs[i]=},{ys[i]=}')
+
+for i in range(10):
+  
+  out = []
+  ix = char_to_i['.']
+  #print(f'{ix=}')
+  while True:
+    xenc = F.one_hot(torch.tensor([ix]), num_classes=len_chars).float()    
+    logits = xenc @ W # predict log-counts
+    counts = logits.exp() # counts, equivalent to N
+    p = counts / counts.sum(1, keepdims=True) # probabilities for next character
+    #print(f'{p=}')
+    
+    ix = torch.multinomial(probs[ix], num_samples=1, replacement=True, generator=g).item()
+    out.append(i_to_char[ix])
+    if ix == char_to_i['.']:
+      break
+  print(''.join(out))
+
+exit()
+
+
+
+
 my_generator = np.random.default_rng(7)
-for _ in range(10):
+for _ in range(50):
     next_c='.'
     name=''
     while(True):
