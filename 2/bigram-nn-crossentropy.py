@@ -107,13 +107,13 @@ for k in range(200):
     # backward pass
     W.grad = None # set to zero the gradient
     loss.backward()
-    print(loss.item())
+    print(f'{loss.item()=}')
     # update
     W.data += -50 * W.grad
     logits0=F.one_hot(torch.tensor([0]), num_classes=len_chars).float() @ W
     counts0=logits0.exp()
     probs0=counts0 / counts0.sum(1, keepdims=True)
-    #print(f'{probs0=}')
+    print(f'{probs0=}')
 
 
 #print(probs.shape)
