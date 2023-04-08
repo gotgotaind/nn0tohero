@@ -19,7 +19,7 @@ import torch.nn.functional as F
 import torch
 
 
-input='prenoms.txt'
+input='names.txt'
 
 # Generate the list of charaters
 charset=set()
@@ -93,7 +93,7 @@ counts = logits.exp() # counts, equivalent to N
 probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
 # gradient descent
 cel = torch.nn.CrossEntropyLoss()
-for k in range(200):
+for k in range(2000):
 
     logits = xenc @ W # predict log-counts
     #counts = logits.exp() # counts, equivalent to N
@@ -101,13 +101,13 @@ for k in range(200):
     #print(f'{probs[0]}')
 
     #loss = -probs[torch.arange(total_chars), ys].log().mean()+ 0.1*(W**2).mean()
-    loss = cel(logits, ys)+ 0.1*(W**2).mean()
+    loss = cel(logits, ys)+ 0.01*(W**2).mean()
 
 
     # backward pass
     W.grad = None # set to zero the gradient
     loss.backward()
-    print(f'{loss.item()=}')
+    print(f'{k=},{loss.item()=}')
     # update
     W.data += -50 * W.grad
     logits0=F.one_hot(torch.tensor([0]), num_classes=len_chars).float() @ W
@@ -122,7 +122,6 @@ list_chars=[]
 for i in range(len_chars):
     list_chars.append(i_to_char[i])
 print(f'{list_chars=}')
-print(f'{probs[0]=}')
 
 for i in range(total_chars):
     if(xs[i]==0):

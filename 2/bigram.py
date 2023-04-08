@@ -16,7 +16,7 @@ E06: meta-exercise! Think of a fun/interesting exercise and complete it.
  """
 import numpy as np
 
-input='prenoms.txt'
+input='names.txt'
 
 # Generate the list of charaters
 charset=set()
@@ -94,7 +94,25 @@ for i in range(len_chars):
     list_chars.append(i_to_char[i])
 np.set_printoptions(precision=4,suppress=True)
 print(f'{list_chars=}')
-print(f'{p[4]}')
+
+
+import torch
+import torch.nn.functional as F
+
+g = torch.Generator().manual_seed(2147483647)
+for i in range(10):
+  
+  out = []
+  ix = char_to_i['.']
+  while True:
+
+    ix = torch.multinomial(torch.Tensor(p[ix]), num_samples=1, replacement=True, generator=g).item()
+    out.append(i_to_char[ix])
+    if ix == char_to_i['.']:
+      break
+  print(''.join(out))
+
+exit()
 my_generator = np.random.default_rng(7)
 for _ in range(10):
     next_c='.'
