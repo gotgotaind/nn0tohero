@@ -14,8 +14,9 @@ E05: look up and use F.cross_entropy instead. You should achieve the same result
 E06: meta-exercise! Think of a fun/interesting exercise and complete it.
 
  """
-import numpy as np
-
+#import numpy as np
+import torch
+torch.set_printoptions(sci_mode=False)
 input='names.txt'
 
 # Generate the list of charaters
@@ -43,7 +44,8 @@ for i,c in enumerate(charlist):
 #print(char_to_i)
 
 len_chars=len(charlist)
-count=np.zeros((len_chars,len_chars),dtype=int)
+#count=np.zeros((len_chars,len_chars),dtype=int)
+count=torch.zeros((len_chars, len_chars), dtype=torch.int32)
 with open(input) as f:
     for line in (f):
         i=0
@@ -61,52 +63,49 @@ with open(input) as f:
             #last_char=c
         #count[char_to_i[last_char],char_to_i['.']] += 1
 
-sum=np.zeros((len_chars),dtype=int)
-for i in range(len_chars):
-    for j in range(len_chars):
-        sum[i]+=count[i][j]
-
-p=np.zeros((len_chars,len_chars),dtype=float)
-for i in range(len_chars):
-    for j in range(len_chars):
-        p[i][j]=count[i][j]/sum[i]
-
-#print(p[char_to_i['.']])
-#exit()
-# ss=0.0
-# for j in range(len_chars):
-#     ss+=p[4][j]
-# print(ss)
-# import matplotlib.pyplot as plt
-# #%matplotlib inline
-
-# plt.figure(figsize=(32,32))
-# plt.imshow(p, cmap='Blues')
+# sum=np.zeros((len_chars),dtype=int)
 # for i in range(len_chars):
 #     for j in range(len_chars):
+#         sum[i]+=count[i][j]
+
+# p=np.zeros((len_chars,len_chars),dtype=float)
+# for i in range(len_chars):
+#     for j in range(len_chars):
+#         p[i][j]=(count[i][j])/(sum[i])
+
+p = (count+1).float()
+p /= p.sum(1, keepdims=True)
+
+# import matplotlib.pyplot as plt
+# plt.figure(figsize=(16,16))
+# plt.imshow(count, cmap='Blues')
+# for i in range(27):
+#     for j in range(27):
 #         chstr = i_to_char[i] + i_to_char[j]
 #         plt.text(j, i, chstr, ha="center", va="bottom", color='gray')
-#         plt.text(j, i, p[i, j], ha="center", va="top", color='gray')
+#         plt.text(j, i, count[i, j].item(), ha="center", va="top", color='gray')
 # plt.axis('off');
 # plt.savefig('image.png')
+# exit()
+
 list_chars=[]
 for i in range(len_chars):
     list_chars.append(i_to_char[i])
-np.set_printoptions(precision=4,suppress=True)
+#np.set_printoptions(precision=4,suppress=True)
 print(f'{list_chars=}')
-
+print(f'{p[0]=}')
 
 import torch
 import torch.nn.functional as F
 
 g = torch.Generator().manual_seed(2147483647)
-for i in range(10):
+for i in range(50):
   
   out = []
   ix = char_to_i['.']
   while True:
 
-    ix = torch.multinomial(torch.Tensor(p[ix]), num_samples=1, replacement=True, generator=g).item()
+    ix = torch.multinomial(p[ix], num_samples=1, replacement=True, generator=g).item()
     out.append(i_to_char[ix])
     if ix == char_to_i['.']:
       break
