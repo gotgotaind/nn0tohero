@@ -41,10 +41,8 @@ for i,c in enumerate(charlist):
     char_to_i[c]=i
     i_to_char[i]=c
 
-#print(char_to_i)
-
 len_chars=len(charlist)
-#count=np.zeros((len_chars,len_chars),dtype=int)
+
 count=torch.zeros((len_chars, len_chars), dtype=torch.int32)
 with open(input) as f:
     for line in (f):
@@ -60,20 +58,10 @@ with open(input) as f:
                 prev_char=line[i-1].lower()
             count[char_to_i[prev_char]][char_to_i[c]] += 1
             i+=1
-            #last_char=c
-        #count[char_to_i[last_char],char_to_i['.']] += 1
 
-# sum=np.zeros((len_chars),dtype=int)
-# for i in range(len_chars):
-#     for j in range(len_chars):
-#         sum[i]+=count[i][j]
 
-# p=np.zeros((len_chars,len_chars),dtype=float)
-# for i in range(len_chars):
-#     for j in range(len_chars):
-#         p[i][j]=(count[i][j])/(sum[i])
-
-p = (count+1).float()
+smoothing=0
+p = (count+smoothing).float()
 p /= p.sum(1, keepdims=True)
 
 # import matplotlib.pyplot as plt
@@ -91,7 +79,7 @@ p /= p.sum(1, keepdims=True)
 list_chars=[]
 for i in range(len_chars):
     list_chars.append(i_to_char[i])
-#np.set_printoptions(precision=4,suppress=True)
+
 print(f'{list_chars=}')
 print(f'{p[0]=}')
 
@@ -111,17 +99,24 @@ for i in range(50):
       break
   print(''.join(out))
 
-exit()
-my_generator = np.random.default_rng(7)
-for _ in range(10):
-    next_c='.'
-    name=''
-    while(True):
-        next_i=my_generator.multinomial(1, p[char_to_i[next_c]]).argmax(axis=-1)
-        next_c=i_to_char[next_i]
-        name+=next_c
-        #print(next_c,next_i)
-        if(next_c == '.'):
-            break
-    print(name)
-    
+
+# compute "loss"
+log_likelihood=0
+n=0
+
+with open(input) as f:
+    for line in (f):
+        i=0
+        #last_char=''
+        for c in (line.lower()):
+
+            if( c == '\n' ):
+                c='.'
+            if(i==0):
+                prev_char='.'
+            else:
+                prev_char=line[i-1].lower()
+            log_likelihood += torch.log(p[char_to_i[prev_char]][char_to_i[c]])
+            i+=1
+            n+=1
+print(f'{log_likelihood/n=}')            

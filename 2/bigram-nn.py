@@ -97,7 +97,9 @@ for k in range(200):
     counts = logits.exp() # counts, equivalent to N
     probs = counts / counts.sum(1, keepdims=True) # probabilities for next character
     #print(f'{probs[0]}')
-    loss = -probs[torch.arange(total_chars), ys].log().mean()+ 0.01*(W**2).mean()
+    # regul/smoothing
+    regul=0
+    loss = -probs[torch.arange(total_chars), ys].log().mean()+ regul*(W**2).mean()
 
 
 
@@ -112,10 +114,6 @@ for k in range(200):
     probs0=counts0 / counts0.sum(1, keepdims=True)
     #print(f'{probs0=}')
 
-print(W)
-# exit()
-#print(probs.shape)
-#print(len_chars)
 list_chars=[]
 for i in range(len_chars):
     list_chars.append(i_to_char[i])
@@ -140,22 +138,3 @@ for i in range(50):
     if ix == char_to_i['.']:
       break
   print(''.join(out))
-
-exit()
-
-
-
-
-my_generator = np.random.default_rng(7)
-for _ in range(50):
-    next_c='.'
-    name=''
-    while(True):
-        next_i=my_generator.multinomial(1, p[char_to_i[next_c]]).argmax(axis=-1)
-        next_c=i_to_char[next_i]
-        name+=next_c
-        #print(next_c,next_i)
-        if(next_c == '.'):
-            break
-    print(name)
-    
