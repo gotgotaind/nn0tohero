@@ -10,9 +10,9 @@ import torch.nn.functional as F
 
 # read in all the words
 words = open('../names.txt', 'r').read().splitlines()
-print(len(words))
-print(max(len(w) for w in words))
-print(words[:8])
+print(f'{len(words)=}')
+print(f'{max(len(w) for w in words)=}')
+print(f'{words[:8]=}')
 
 
 
@@ -23,8 +23,8 @@ stoi = {s:i+1 for i,s in enumerate(chars)}
 stoi['.'] = 0
 itos = {i:s for s,i in stoi.items()}
 vocab_size = len(itos)
-print(itos)
-print(vocab_size)
+print(f'{itos=}')
+print(f'{vocab_size=}')
 
 
 # build the dataset
@@ -43,7 +43,7 @@ def build_dataset(words):
 
   X = torch.tensor(X)
   Y = torch.tensor(Y)
-  print(X.shape, Y.shape)
+  print(f'{X.shape=}, {Y.shape=}')
   return X, Y
 
 import random
@@ -85,7 +85,7 @@ bnbias = torch.randn((1, n_hidden))*0.1
 # implementation of the backward pass.
 
 parameters = [C, W1, b1, W2, b2, bngain, bnbias]
-print(sum(p.nelement() for p in parameters)) # number of parameters in total
+print(f'{sum(p.nelement() for p in parameters)=}') # number of parameters in total
 for p in parameters:
   p.requires_grad = True
 
@@ -135,5 +135,20 @@ for t in [logprobs, probs, counts, counts_sum, counts_sum_inv, # afaik there is 
          embcat, emb]:
   t.retain_grad()
 loss.backward()
-loss
+print(f'{loss=}')
 
+dlogprobs=torch.zeros_like(logprobs)
+dlogprobs[range(n),Yb]=-1.0/batch_size
+dprobs=(probs**-1)*dlogprobs
+dcounts=dprobs*counts_sum_inv
+dcounts_sum_inv=(dprobs*counts).sum(1,keepdim=True)
+dcounts_sum=dcounts_sum_inv*-1.0*counts_sum**-2
+dcounts+=dcounts_sum*torch.ones_like(dcounts)
+dnorm_logits=dcounts*norm_logits.exp()
+
+cmp('logprobs',dlogprobs,logprobs)
+cmp('probs',dprobs,probs)
+cmp('counts',dcounts,counts)
+cmp('counts_sum_inv',dcounts_sum_inv,counts_sum_inv)
+cmp('counts_sum',dcounts_sum,counts_sum)
+cmp('dnorm_logits',dnorm_logits,norm_logits)
