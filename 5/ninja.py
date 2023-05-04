@@ -144,7 +144,14 @@ dcounts=dprobs*counts_sum_inv
 dcounts_sum_inv=(dprobs*counts).sum(1,keepdim=True)
 dcounts_sum=dcounts_sum_inv*-1.0*counts_sum**-2
 dcounts+=dcounts_sum*torch.ones_like(dcounts)
-dnorm_logits=dcounts*norm_logits.exp()
+dnorm_logits=dcounts*(norm_logits.exp())
+dlogits=dnorm_logits
+dlogit_maxes=-1.0*dnorm_logits.sum(1,keepdim=True)
+dlogits+=dlogit_maxes*(1.0*torch.nn.functional.one_hot(logits.max(1, keepdim=False).indices , num_classes=vocab_size))
+print(f'{h.shape=}, {W2.shape=}, {b2.shape=},{(h @ W2).shape=},{(h @ W2).sum(0).shape=}')
+#logits = h @ W2 + b2 # output layer
+db2=dlogits*((h @ W2).sum(0,keepdim=False))
+print(f'{db2.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
 cmp('probs',dprobs,probs)
@@ -152,3 +159,6 @@ cmp('counts',dcounts,counts)
 cmp('counts_sum_inv',dcounts_sum_inv,counts_sum_inv)
 cmp('counts_sum',dcounts_sum,counts_sum)
 cmp('dnorm_logits',dnorm_logits,norm_logits)
+cmp('dlogit_maxes',dlogit_maxes,logit_maxes)
+cmp('dlogits',dlogits,logits)
+cmp('db2',db2,b2)
