@@ -1,6 +1,8 @@
 # https://www.youtube.com/watch?v=q8SA3rM6ckI&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=5
 
 # https://github.com/karpathy/nn-zero-to-hero/blob/master/lectures/makemore/makemore_part4_backprop.ipynb
+# https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf
+
 
 import torch
 import torch.nn.functional as F
@@ -150,7 +152,7 @@ dlogit_maxes=-1.0*dnorm_logits.sum(1,keepdim=True)
 dlogits+=dlogit_maxes*(1.0*torch.nn.functional.one_hot(logits.max(1, keepdim=False).indices , num_classes=vocab_size))
 print(f'{h.shape=}, {W2.shape=}, {b2.shape=},{(h @ W2).shape=},{(h @ W2).sum(0).shape=}')
 #logits = h @ W2 + b2 # output layer
-db2=dlogits*((h @ W2).sum(0,keepdim=False))
+db2=dlogits.sum(0)
 print(f'{db2.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
