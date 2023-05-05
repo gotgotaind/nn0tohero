@@ -154,6 +154,7 @@ print(f'{h.shape=}, {W2.shape=}, {b2.shape=},{(h @ W2).shape=},{(h @ W2).sum(0).
 #logits = h @ W2 + b2 # output layer
 db2=dlogits.sum(0)
 dW2=torch.transpose(h,0,1)@dlogits
+dh=dlogits@torch.transpose(W2,0,1)
 print(f'{db2.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
@@ -166,3 +167,4 @@ cmp('dlogit_maxes',dlogit_maxes,logit_maxes)
 cmp('dlogits',dlogits,logits)
 cmp('db2',db2,b2)
 cmp('dW2',dW2,W2)
+cmp('dh',dh,h)
