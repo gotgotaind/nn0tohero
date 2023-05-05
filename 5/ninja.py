@@ -150,12 +150,16 @@ dnorm_logits=dcounts*(norm_logits.exp())
 dlogits=dnorm_logits
 dlogit_maxes=-1.0*dnorm_logits.sum(1,keepdim=True)
 dlogits+=dlogit_maxes*(1.0*torch.nn.functional.one_hot(logits.max(1, keepdim=False).indices , num_classes=vocab_size))
-print(f'{h.shape=}, {W2.shape=}, {b2.shape=},{(h @ W2).shape=},{(h @ W2).sum(0).shape=}')
-#logits = h @ W2 + b2 # output layer
 db2=dlogits.sum(0)
 dW2=torch.transpose(h,0,1)@dlogits
 dh=dlogits@torch.transpose(W2,0,1)
-print(f'{db2.shape=}')
+dhpreact=dh*(1.0-torch.tanh(hpreact)**2)
+dbngain=(dhpreact*bnraw).sum(0)
+dbnraw=dhpreact*bngain
+dbnbias=dhpreact.sum(0)
+dbndiff=dbnraw*bnvar_inv*n
+#bnraw = bndiff * bnvar_inv
+print(f'{bnraw.shape=} = {bndiff.shape=} * {bnvar_inv.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
 cmp('probs',dprobs,probs)
@@ -168,3 +172,8 @@ cmp('dlogits',dlogits,logits)
 cmp('db2',db2,b2)
 cmp('dW2',dW2,W2)
 cmp('dh',dh,h)
+cmp('dhpreact',dhpreact,hpreact)
+cmp('dbngain',dbngain,bngain)
+cmp('dbnraw',dbnraw,bnraw)
+cmp('dbnbias',dbnbias,bnbias)
+cmp('dbndiff',dbndiff,bndiff)
