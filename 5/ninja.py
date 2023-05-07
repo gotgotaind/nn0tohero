@@ -162,8 +162,11 @@ dbnbias=dhpreact.sum(0)
 # bnvar = 1/(n-1)*(bndiff2).sum(0, keepdim=True) # note: Bessel's correction (dividing by n-1, not n)
 # bnvar_inv = (bnvar + 1e-5)**-0.5
 # bnraw = bndiff * bnvar_inv
-dbndiff=dbnraw*bnvar_inv*n
-dbnvar_inv=(dbndiff*dbnraw).sum(0)
+dbndiff=dbnraw*bnvar_inv.sum(0,keepdim=True)
+dbnvar_inv=(bndiff*dbnraw).sum(0)
+dbnvar=dbnvar_inv*-0.5*(bnvar+1e-5)**-1.5
+dbndiff2=dbnvar.sum(0,keepdim=True)/(n-1)*torch.ones_like(bndiff2)
+dbndiff+=dbndiff2*2.0*bndiff
 
 print(f'{bnraw.shape=} = {bndiff.shape=} * {bnvar_inv.shape=}')
 
@@ -184,3 +187,5 @@ cmp('dbnraw',dbnraw,bnraw)
 cmp('dbnbias',dbnbias,bnbias)
 cmp('dbndiff',dbndiff,bndiff)
 cmp('dbnvar_inv',dbnvar_inv,bnvar_inv)
+cmp('dbnvar',dbnvar,bnvar)
+cmp('dbndiff2',dbndiff2,bndiff2)
