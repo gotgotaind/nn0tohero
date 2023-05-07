@@ -157,8 +157,13 @@ dhpreact=dh*(1.0-torch.tanh(hpreact)**2)
 dbngain=(dhpreact*bnraw).sum(0)
 dbnraw=dhpreact*bngain
 dbnbias=dhpreact.sum(0)
+
+# bndiff2 = bndiff**2
+# bnvar = 1/(n-1)*(bndiff2).sum(0, keepdim=True) # note: Bessel's correction (dividing by n-1, not n)
+# bnvar_inv = (bnvar + 1e-5)**-0.5
+# bnraw = bndiff * bnvar_inv
 dbndiff=dbnraw*bnvar_inv*n
-#bnraw = bndiff * bnvar_inv
+dbnvar_inv=(dbndiff*dbnraw).sum(0)
 print(f'{bnraw.shape=} = {bndiff.shape=} * {bnvar_inv.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
@@ -177,3 +182,4 @@ cmp('dbngain',dbngain,bngain)
 cmp('dbnraw',dbnraw,bnraw)
 cmp('dbnbias',dbnbias,bnbias)
 cmp('dbndiff',dbndiff,bndiff)
+cmp('dbnvar_inv',dbnvar_inv,bnvar_inv)
