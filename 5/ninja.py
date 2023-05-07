@@ -164,6 +164,7 @@ dbnbias=dhpreact.sum(0)
 # bnraw = bndiff * bnvar_inv
 dbndiff=dbnraw*bnvar_inv*n
 dbnvar_inv=(dbndiff*dbnraw).sum(0)
+
 print(f'{bnraw.shape=} = {bndiff.shape=} * {bnvar_inv.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
