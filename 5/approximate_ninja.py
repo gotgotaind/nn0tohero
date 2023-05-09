@@ -149,23 +149,15 @@ dcounts+=dcounts_sum*torch.ones_like(dcounts)
 dnorm_logits=dcounts*(norm_logits.exp())
 dlogits=dnorm_logits.clone()
 dlogit_maxes=-1.0*dnorm_logits.sum(1,keepdim=True)
-""" mytake dlogits+=dlogit_maxes*(1.0*torch.nn.functional.one_hot(logits.max(1, keepdim=False).indices , num_classes=vocab_size))
+dlogits+=dlogit_maxes*(1.0*torch.nn.functional.one_hot(logits.max(1, keepdim=False).indices , num_classes=vocab_size))
 db2=dlogits.sum(0)
 dW2=torch.transpose(h,0,1)@dlogits
-dh=dlogits@torch.transpose(W2,0,1) """
-dlogits += F.one_hot(logits.max(1).indices, num_classes=logits.shape[1]) * dlogit_maxes
-dh = dlogits @ W2.T
-dW2 = h.T @ dlogits
-db2 = dlogits.sum(0)
-""" mytake dhpreact=dh*(1.0-torch.tanh(hpreact)**2)
+dh=dlogits@torch.transpose(W2,0,1)
+dhpreact=dh*(1.0-torch.tanh(hpreact)**2)
 dbngain=(dhpreact*bnraw).sum(0)
 dbnraw=dhpreact*bngain
-dbnbias=dhpreact.sum(0) """
+dbnbias=dhpreact.sum(0)
 
-dhpreact = (1.0 - h**2) * dh
-dbngain = (bnraw * dhpreact).sum(0, keepdim=True)
-dbnraw = bngain * dhpreact
-dbnbias = dhpreact.sum(0, keepdim=True)
 # bndiff2 = bndiff**2
 # bnvar = 1/(n-1)*(bndiff2).sum(0, keepdim=True) # note: Bessel's correction (dividing by n-1, not n)
 # bnvar_inv = (bnvar + 1e-5)**-0.5
@@ -174,8 +166,7 @@ dbnbias = dhpreact.sum(0, keepdim=True)
 dbndiff = bnvar_inv * dbnraw
 # mytake  dbnvar_inv=(bndiff*dbnraw).sum(0)
 dbnvar_inv = (bndiff * dbnraw).sum(0, keepdim=True)
-# mytake dbnvar=dbnvar_inv*-0.5*(bnvar+1e-5)**-1.5
-dbnvar = (-0.5*(bnvar + 1e-5)**-1.5) * dbnvar_inv
+dbnvar=dbnvar_inv*-0.5*(bnvar+1e-5)**-1.5
 dbndiff2=dbnvar.sum(0,keepdim=True)/(n-1)*torch.ones_like(bndiff2)
 ### dbndiff+=dbndiff2*(2.0*bndiff)
 dbndiff += 2*bndiff * dbndiff2
@@ -191,9 +182,7 @@ dbndiff += 2*bndiff * dbndiff2
 dhprebn=dbndiff.clone()
 dbnmeani=-dbndiff.sum(0,keepdim=True)
 dhprebn+=1/n*dbnmeani*torch.ones_like(hprebn)
-dembcat=dhprebn*W1.T
-dW1=embcat.T*dhprebn
-print(f'{hprebn.shape=} = {embcat.shape=} @ {W1.shape=} + {b1.shape=}')
+print(f'{bndiff.shape=} = {hprebn.shape=} * {bnmeani.shape=}')
 
 cmp('logprobs',dlogprobs,logprobs)
 cmp('probs',dprobs,probs)
@@ -216,5 +205,3 @@ cmp('dbnvar',dbnvar,bnvar)
 cmp('dbndiff2',dbndiff2,bndiff2)
 cmp('dhprebn',dhprebn,hprebn)
 cmp('dbnmeani',dbnmeani,bnmeani)
-cmp('dembcat',dembcat,embcat)
-cmp('dW1',dW1,W1)
