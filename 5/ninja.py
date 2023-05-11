@@ -182,18 +182,16 @@ dbndiff += 2*bndiff * dbndiff2
 
 # emb = C[Xb] # embed the characters into vectors
 # embcat = emb.view(emb.shape[0], -1) # concatenate the vectors
-# # Linear layer 1
-# hprebn = embcat @ W1 + b1 # hidden layer pre-activation
-# # BatchNorm layer
-# bnmeani = 1/n*hprebn.sum(0, keepdim=True)
-# bndiff = hprebn - bnmeani
+
+print(f'{embcat.shape=} = {emb.shape=} . view({emb.shape[0]=},-1)')
 
 dhprebn=dbndiff.clone()
 dbnmeani=-dbndiff.sum(0,keepdim=True)
 dhprebn+=1/n*dbnmeani*torch.ones_like(hprebn)
-dembcat=dhprebn*W1.T
-dW1=embcat.T*dhprebn
-print(f'{hprebn.shape=} = {embcat.shape=} @ {W1.shape=} + {b1.shape=}')
+dembcat=dhprebn@W1.T
+dW1=embcat.T@dhprebn
+db1=dhprebn.sum(0)
+demb=dembcat.view(emb.shape)
 
 cmp('logprobs',dlogprobs,logprobs)
 cmp('probs',dprobs,probs)
@@ -218,3 +216,5 @@ cmp('dhprebn',dhprebn,hprebn)
 cmp('dbnmeani',dbnmeani,bnmeani)
 cmp('dembcat',dembcat,embcat)
 cmp('dW1',dW1,W1)
+cmp('db1',db1,b1)
+cmp('demb',demb,emb)
