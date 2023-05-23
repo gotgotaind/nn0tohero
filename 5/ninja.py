@@ -154,6 +154,9 @@ db2=dlogits.sum(0)
 dW2=torch.transpose(h,0,1)@dlogits
 dh=dlogits@torch.transpose(W2,0,1) """
 dlogits += F.one_hot(logits.max(1).indices, num_classes=logits.shape[1]) * dlogit_maxes
+dlogits2=probs
+dlogits2[range(n),Yb] -= 1
+dlogits2 /= n
 dh = dlogits @ W2.T
 dW2 = h.T @ dlogits
 db2 = dlogits.sum(0)
@@ -201,6 +204,7 @@ cmp('counts_sum',dcounts_sum,counts_sum)
 cmp('dnorm_logits',dnorm_logits,norm_logits)
 cmp('dlogit_maxes',dlogit_maxes,logit_maxes)
 cmp('dlogits',dlogits,logits)
+cmp('dlogits2',dlogits2,logits)
 cmp('db2',db2,b2)
 cmp('dW2',dW2,W2)
 cmp('dh',dh,h)
