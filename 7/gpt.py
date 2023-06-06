@@ -1,7 +1,9 @@
 # https://raw.githubusercontent.com/karpathy/ng-video-lecture/master/gpt.py
 # https://www.youtube.com/watch?v=kCc8FmEb1nY&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&index=7
-
-
+# https://colab.research.google.com/drive/1JMLa53HDuA-i7ZBmqV7ZnA3c_fvtXnx-?usp=sharing
+# https://arxiv.org/abs/1706.03762 attention is all you need
+# https://karpathy.github.io/2015/05/21/rnn-effectiveness/
+# https://karpathy.ai/
 
 import torch
 import torch.nn as nn
