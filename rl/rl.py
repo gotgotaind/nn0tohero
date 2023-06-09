@@ -1,4 +1,8 @@
 """ Trains an agent with (stochastic) Policy Gradients on Pong. Uses OpenAI Gym. """
+
+# http://karpathy.github.io/2016/05/31/rl/
+
+
 import numpy as np
 #import cPickle as pickle
 import pickle
@@ -30,18 +34,19 @@ def sigmoid(x):
 
 def prepro(I):
   """ prepro 210x160x3 uint8 frame into 6400 (80x80) 1D float vector """
+
   I = I[35:195] # crop
   I = I[::2,::2,0] # downsample by factor of 2
   I[I == 144] = 0 # erase background (background type 1)
   I[I == 109] = 0 # erase background (background type 2)
   I[I != 0] = 1 # everything else (paddles, ball) just set to 1
-  return I.astype(np.float).ravel()
+  return I.astype(float).ravel()
 
 def discount_rewards(r):
   """ take 1D float array of rewards and compute discounted reward """
   discounted_r = np.zeros_like(r)
   running_add = 0
-  for t in reversed(xrange(0, r.size)):
+  for t in reversed(range(0, r.size)):
     if r[t] != 0: running_add = 0 # reset the sum, since this was a game boundary (pong specific!)
     running_add = running_add * gamma + r[t]
     discounted_r[t] = running_add
@@ -62,8 +67,12 @@ def policy_backward(eph, epdlogp):
   dW1 = np.dot(dh.T, epx)
   return {'W1':dW1, 'W2':dW2}
 
+#env = gym.make("Pong-v0",render_mode=render_mode)
 env = gym.make("Pong-v0")
 observation = env.reset()
+observation=observation[0]
+#print(f'{np.shape(observation[0])=}')
+#print(f'{np.shape(observation[1])=}')
 prev_x = None # used in computing the difference frame
 xs,hs,dlogps,drs = [],[],[],[]
 running_reward = None
@@ -73,6 +82,7 @@ while True:
   if render: env.render()
 
   # preprocess the observation, set input to network to be difference image
+  #print(type(observation[0]))
   cur_x = prepro(observation)
   x = cur_x - prev_x if prev_x is not None else np.zeros(D)
   prev_x = cur_x
@@ -88,7 +98,8 @@ while True:
   dlogps.append(y - aprob) # grad that encourages the action that was taken to be taken (see http://cs231n.github.io/neural-networks-2/#losses if confused)
 
   # step the environment and get new measurements
-  observation, reward, done, info = env.step(action)
+  observation, reward, terminated, truncated, info = env.step(action)
+  done = terminated or truncated
   reward_sum += reward
 
   drs.append(reward) # record reward (has to be done after we call step() to get reward for previous action)
@@ -127,7 +138,9 @@ while True:
     if episode_number % 100 == 0: pickle.dump(model, open('save.p', 'wb'))
     reward_sum = 0
     observation = env.reset() # reset env
+    observation = observation[0]
     prev_x = None
 
   if reward != 0: # Pong has either +1 or -1 reward exactly when game ends.
-    print ('ep %d: game finished, reward: %f' % (episode_number, reward)) + ('' if reward == -1 else ' !!!!!!!!')
+    #print ('ep %d: game finished, reward: %f' % (episode_number, reward)) + ('' if reward == -1 else ' !!!!!!!!')
+    print ('ep %d: game finished, reward: %f' % (episode_number, reward))
