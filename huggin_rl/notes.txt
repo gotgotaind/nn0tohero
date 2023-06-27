@@ -1,2 +1,3 @@
 https://huggingface.co/learn/deep-rl-course/unit2/hands-on?fw=pt
 jupyter notebook
+sudo mount -o remount,rw /tmp/.X11-unix
